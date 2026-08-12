@@ -4,7 +4,7 @@ import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { emailHref, nav, phoneHref, site } from "@/lib/site";
 import { services } from "@/lib/content";
 
-export function Footer() { return <footer className="bg-navy text-slate-300"><div className="container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
+export function Footer() { return <footer className="site-global-footer bg-navy text-slate-300"><div className="container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
   <div><Image src="/images/logo-source.webp" alt="CTA Plumbing 100" width={112} height={112} className="rounded-xl" /><p className="mt-4 leading-7">Dependable residential and commercial plumbing support across Nampa and the Treasure Valley.</p></div>
   <div><h2 className="footer-title">Explore</h2>{nav.map((item) => <Link className="footer-link" href={item.href} key={item.href}>{item.label}</Link>)}</div>
   <div><h2 className="footer-title">Popular Services</h2>{services.slice(0, 5).map((service) => <Link className="footer-link" href={`/services/${service.slug}`} key={service.slug}>{service.name}</Link>)}</div>
