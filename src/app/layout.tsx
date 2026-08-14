@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { JsonLd } from "@/components/json-ld";
 import { site } from "@/lib/site";
@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   description: "Residential and commercial plumbing services in Nampa, Boise, Meridian, and communities across Idaho’s Treasure Valley.",
   icons: { icon: "/images/logo-source.webp", apple: "/images/logo-source.webp" },
   alternates: { canonical: "/" }, openGraph: { type: "website", locale: "en_US", siteName: site.name, title: "CTA Plumbing 100", description: "Dependable plumbing support across Nampa and the Treasure Valley.", images: [{ url: "/images/hero-plumber.webp", width: 1200, height: 630, alt: "CTA Plumbing 100 technician serving a Treasure Valley property" }] },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
