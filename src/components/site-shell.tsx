@@ -6,7 +6,8 @@ import { Footer } from "@/components/footer";
 import { StickyMobileCall } from "@/components/shared";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
-  const funnel = usePathname() === "/estimate-a";
+  const pathname = usePathname();
+  const funnel = pathname === "/estimate-a" || pathname.startsWith("/offers/");
   if (funnel) return <main>{children}</main>;
   return <><Header /><main>{children}</main><Footer /><StickyMobileCall /></>;
 }

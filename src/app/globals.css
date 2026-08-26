@@ -36,7 +36,16 @@ a, button, input, textarea, select { outline-offset: 3px; }
 .footer-contact svg { width: 1rem; flex: none; color: var(--color-copper); }
 .page-hero { position: relative; overflow: hidden; background: linear-gradient(135deg, #11110f, #29261f); color: white; }
 .page-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 85% 20%, rgba(216,154,82,.2), transparent 34%); pointer-events: none; }
+.speed-offer-badge { position: relative; isolation: isolate; }
+.speed-offer-badge::after { content: ""; position: absolute; z-index: -1; width: 9rem; height: 9rem; right: -3rem; top: -4rem; border-radius: 999px; background: rgba(201,46,50,.28); filter: blur(18px); }
+.speed-clock::before, .speed-clock::after { content: ""; position: absolute; background: var(--color-copper-light); }
+.speed-clock::before { width: .3rem; height: .3rem; border-radius: 999px; top: .35rem; box-shadow: 0 4rem 0 var(--color-copper-light); }
+.speed-clock::after { width: .3rem; height: .3rem; border-radius: 999px; left: .35rem; box-shadow: 4rem 0 0 var(--color-copper-light); }
+.speed-clock-hand { position: absolute; left: 50%; bottom: 50%; width: 3px; border-radius: 999px; background: white; transform-origin: 50% 100%; }
+.speed-clock-minute { height: 1.65rem; animation: speed-clock-spin 4s linear infinite; }
+.speed-clock-hour { height: 1.15rem; transform: rotate(300deg); }
+@keyframes speed-clock-spin { to { transform: rotate(360deg); } }
 .prose-list li { position: relative; padding-left: 1.75rem; line-height: 1.8; color: #475569; }
 .prose-list li::before { content: "✓"; position: absolute; left: 0; font-weight: 900; color: var(--color-copper-dark); }
 @media (max-width: 767px) { body { padding-bottom: 5.25rem; } }
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } .speed-clock-minute { transform: rotate(60deg); } }
