@@ -68,5 +68,5 @@ export const campaigns: Record<CampaignSlug, Campaign> = {
 };
 
 export const campaignList = Object.values(campaigns);
-export const campaignPhoneHref = (phone: string) => phone.startsWith("[") ? "tel:2087953366" : `tel:${phone.replace(/[^+\d]/g, "")}`;
-export const campaignPhoneDisplay = (phone: string) => phone.startsWith("[") ? "(208) 795-3366" : phone;
+export const campaignPhoneHref = (phone: string) => phone.startsWith("[") ? "tel:2084479290" : `tel:${phone.replace(/[^+\d]/g, "")}`;
+export const campaignPhoneDisplay = (phone: string) => phone.startsWith("[") ? "(208) 447-9290" : phone;

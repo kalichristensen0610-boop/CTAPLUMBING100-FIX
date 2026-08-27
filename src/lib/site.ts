@@ -2,7 +2,7 @@ export const site = {
   name: "CTA Plumbing 100",
   shortName: "CTA Plumbing",
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://ctaplumbing100.com",
-  phone: process.env.NEXT_PUBLIC_PHONE || "(208) 795-3366",
+  phone: process.env.NEXT_PUBLIC_PHONE || "(208) 447-9290",
   email: process.env.NEXT_PUBLIC_EMAIL || "ctaplumbing100@gmail.com",
   hours: process.env.NEXT_PUBLIC_HOURS || "Monday through Friday, 8:00 AM to 5:00 PM",
   emergencyHours: "24/7 Emergency Plumbing",
