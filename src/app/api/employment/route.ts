@@ -8,8 +8,7 @@ const applicationSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(150),
   phone: z.string().trim().min(7).max(30),
-  smsMarketingConsent: z.boolean(),
-  smsNonMarketingConsent: z.boolean(),
+  smsConsent: z.boolean(),
   position: z.enum(["Plumber", "Journeyman Plumber", "Other"]),
   message: z.string().trim().max(2000),
   website: z.string().max(0),
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
   if (!allowed(ip)) return NextResponse.json({ success: false, code: "RATE_LIMITED", message: "Too many applications were submitted. Please try again later." }, { status: 429 });
   let form: FormData;
   try { form = await request.formData(); } catch { return NextResponse.json({ success: false, code: "INVALID_FORM", message: "The application could not be read." }, { status: 400 }); }
-  const parsed = applicationSchema.safeParse({ name: form.get("name"), email: form.get("email"), phone: form.get("phone"), smsMarketingConsent: form.get("smsMarketingConsent") === "true", smsNonMarketingConsent: form.get("smsNonMarketingConsent") === "true", position: form.get("position"), message: form.get("message") || "", website: form.get("website") || "" });
+  const parsed = applicationSchema.safeParse({ name: form.get("name"), email: form.get("email"), phone: form.get("phone"), smsConsent: form.get("smsConsent") === "true", position: form.get("position"), message: form.get("message") || "", website: form.get("website") || "" });
   if (!parsed.success) return NextResponse.json({ success: false, code: "VALIDATION_ERROR", message: "Please review the application information and try again." }, { status: 400 });
   if (parsed.data.website) return NextResponse.json({ success: true, code: "ACCEPTED", message: "Thank you. Your application has been received." });
   const resume = form.get("resume");
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
   try {
     const applicant = parsed.data;
     const transporter = nodemailer.createTransport({ host: SMTP_HOST, port: Number(SMTP_PORT || 587), secure: SMTP_SECURE === "true", auth: { user: SMTP_USER, pass: SMTP_PASSWORD } });
-    await transporter.sendMail({ from: SMTP_FROM, to: recipient, cc, replyTo: applicant.email, subject: `Employment application for ${applicant.position}`, text: [`Name: ${applicant.name}`, `Email: ${applicant.email}`, `Phone: ${applicant.phone}`, `Marketing SMS consent: ${applicant.smsMarketingConsent ? "Yes" : "No"}`, `Non-marketing SMS consent: ${applicant.smsNonMarketingConsent ? "Yes" : "No"}`, `Position: ${applicant.position}`, "", "Additional information:", applicant.message || "None provided"].join("\n"), attachments: [{ filename: resume.name, content: Buffer.from(await resume.arrayBuffer()), contentType: resume.type || undefined }] });
+    await transporter.sendMail({ from: SMTP_FROM, to: recipient, cc, replyTo: applicant.email, subject: `Employment application for ${applicant.position}`, text: [`Name: ${applicant.name}`, `Email: ${applicant.email}`, `Phone: ${applicant.phone}`, `SMS consent: ${applicant.smsConsent ? "Yes" : "No"}`, `Position: ${applicant.position}`, "", "Additional information:", applicant.message || "None provided"].join("\n"), attachments: [{ filename: resume.name, content: Buffer.from(await resume.arrayBuffer()), contentType: resume.type || undefined }] });
     console.info(`[employment:${requestId}] smtp_delivered`);
     return NextResponse.json({ success: true, code: "DELIVERED", message: "Thank you. Your application has been submitted successfully.", requestId });
   } catch (error) {

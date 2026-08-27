@@ -11,7 +11,7 @@ import { SmsConsentFields } from "@/components/sms-consent-fields";
 
 export function LeadForm({ emergency = false, compact = false }: { emergency?: boolean; compact?: boolean }) {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LeadInput>({ resolver: zodResolver(leadSchema), defaultValues: { urgency: emergency ? "emergency" : "non-emergency", preferredContact: "phone", smsMarketingConsent: false, smsNonMarketingConsent: false, website: "" } });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LeadInput>({ resolver: zodResolver(leadSchema), defaultValues: { urgency: emergency ? "emergency" : "non-emergency", preferredContact: "phone", smsConsent: false, website: "" } });
   async function submit(data: LeadInput) {
     setStatus(null);
     try {
@@ -44,7 +44,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
     <label className={`${label} mt-5`}>How can we help? *<textarea className={`${field} min-h-32 py-3`} {...register("message")} /><FieldError name="message" /></label>
     <label className="sr-only" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off" {...register("website")} /></label>
     {status && <div role="status" className={`mt-5 flex gap-3 rounded-lg p-4 ${status.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>{status.type === "success" ? <CheckCircle2 className="shrink-0" /> : <AlertCircle className="shrink-0" />}<p>{status.message}</p></div>}
-    <SmsConsentFields idPrefix="service-request" className="mt-6" marketingInputProps={register("smsMarketingConsent")} nonMarketingInputProps={register("smsNonMarketingConsent")} />
+    <SmsConsentFields idPrefix="service-request" className="mt-6" inputProps={register("smsConsent")} />
     <Button type="submit" size="lg" variant={emergency ? "emergency" : "default"} className={`${compact ? "" : "w-full"} mt-6`} disabled={isSubmitting}>{isSubmitting ? <><LoaderCircle className="animate-spin" />Sending…</> : <><Send />Request Service</>}</Button>
     <p className="mt-4 text-sm leading-6 text-slate-500">Submitting this form does not confirm an appointment. For urgent plumbing problems, call our 24/7 emergency line.</p>
   </form>;

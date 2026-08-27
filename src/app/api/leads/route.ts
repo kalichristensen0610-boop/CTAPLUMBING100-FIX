@@ -129,7 +129,7 @@ export async function POST(request: Request) {
       cc,
       replyTo: lead.email,
       subject: `${lead.urgency === "emergency" ? "URGENT: " : ""}Website request for ${lead.service}`,
-      text: [`Name: ${lead.name}`, `Phone: ${lead.phone}`, `Email: ${lead.email}`, `Address: ${lead.address}, ${lead.city}`, `Service: ${lead.service}`, `Urgency: ${lead.urgency}`, `Preferred contact: ${lead.preferredContact}`, `Marketing SMS consent: ${lead.smsMarketingConsent ? "Yes" : "No"}`, `Non-marketing SMS consent: ${lead.smsNonMarketingConsent ? "Yes" : "No"}`, "", lead.message].join("\n"),
+      text: [`Name: ${lead.name}`, `Phone: ${lead.phone}`, `Email: ${lead.email}`, `Address: ${lead.address}, ${lead.city}`, `Service: ${lead.service}`, `Urgency: ${lead.urgency}`, `Preferred contact: ${lead.preferredContact}`, `SMS consent: ${lead.smsConsent ? "Yes" : "No"}`, "", lead.message].join("\n"),
     });
     console.info(`[leads:${requestId}] smtp_delivered`);
     return NextResponse.json({ success: true, code: "DELIVERED", message: "Thank you. Your request was sent, and we’ll follow up using your preferred contact method.", requestId });
