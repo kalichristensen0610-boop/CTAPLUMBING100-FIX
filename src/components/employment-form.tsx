@@ -56,13 +56,13 @@ export function EmploymentForm() {
       <label className={label}>Full name *<input name="name" className={field} autoComplete="name" minLength={2} maxLength={100} required /></label>
       <label className={label}>Email address *<input name="email" className={field} type="email" autoComplete="email" maxLength={150} required /></label>
       <label className={label}>Phone number *<input name="phone" className={field} type="tel" autoComplete="tel" minLength={7} maxLength={30} required /></label>
-      <SmsConsentFields idPrefix="employment" className="sm:col-span-2" />
       <label className={label}>Position applying for *<select name="position" className={field} required><option value="">Select a position</option><option>Plumber</option><option>Journeyman Plumber</option><option>Other</option></select></label>
     </div>
     <label className={`${label} mt-5`}>Resume *<span className="mt-2 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center"><Upload className="mb-2 text-copper-dark" /><span>Upload PDF, DOC, or DOCX</span><span className="mt-1 text-xs font-normal text-slate-500">Maximum file size is 5 MB</span><input name="resume" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="mt-3 max-w-full text-sm" required /></span></label>
     <label className={`${label} mt-5`}>Message or additional information<textarea name="message" className={`${field} min-h-32 py-3`} maxLength={2000} /></label>
     <label className="sr-only" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     {status && <div role="status" className={`mt-5 flex gap-3 rounded-lg p-4 ${status.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>{status.type === "success" ? <CheckCircle2 className="shrink-0" /> : <AlertCircle className="shrink-0" />}<p>{status.message}</p></div>}
+    <SmsConsentFields idPrefix="employment" className="mt-6" />
     <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>{submitting ? <><LoaderCircle className="animate-spin" />Submitting…</> : <><Send />Submit Application</>}</Button>
     <p className="mt-4 text-sm leading-6 text-slate-500">Submitting an application does not guarantee employment or an interview.</p>
   </form>;

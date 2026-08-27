@@ -41,9 +41,9 @@ export function EstimateForm({ compact = false }: { compact?: boolean }) {
       <input id={`${id}-name`} name="name" className={`${field} !mt-[-.5rem]`} autoComplete="name" minLength={2} maxLength={100} required />
       <label htmlFor={`${id}-phone`} className="text-sm font-bold text-navy">Phone number *</label>
       <input id={`${id}-phone`} name="phone" className={`${field} !mt-[-.5rem]`} type="tel" autoComplete="tel" minLength={7} maxLength={30} required />
-      <SmsConsentFields idPrefix={`${id}-estimate`} />
       <label htmlFor={`${id}-service`} className="text-sm font-bold text-navy">Plumbing service needed *</label>
       <select id={`${id}-service`} name="service" className={`${field} !mt-[-.5rem]`} defaultValue="" required><option value="" disabled>Select a service</option>{services.map((service)=><option key={service}>{service}</option>)}</select>
+      <SmsConsentFields idPrefix={`${id}-estimate`} />
       <input name="source" type="hidden" value="estimate-a" />
       <label className="sr-only" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     </div>
