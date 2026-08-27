@@ -45,6 +45,8 @@ a, button, input, textarea, select { outline-offset: 3px; }
 .speed-clock-minute { height: 1.65rem; animation: speed-clock-spin 4s linear infinite; }
 .speed-clock-hour { height: 1.15rem; transform: rotate(300deg); }
 @keyframes speed-clock-spin { to { transform: rotate(360deg); } }
+.wizard-step { animation: wizard-step-in .24s ease-out; }
+@keyframes wizard-step-in { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 .prose-list li { position: relative; padding-left: 1.75rem; line-height: 1.8; color: #475569; }
 .prose-list li::before { content: "✓"; position: absolute; left: 0; font-weight: 900; color: var(--color-copper-dark); }
 @media (max-width: 767px) { body { padding-bottom: 5.25rem; } }
