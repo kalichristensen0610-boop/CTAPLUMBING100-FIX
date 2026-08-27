@@ -10,6 +10,8 @@ export const leadSchema = z.object({
   urgency: z.enum(["emergency", "non-emergency"]),
   message: z.string().trim().min(10, "Please share a few details").max(2000),
   preferredContact: z.enum(["phone", "email", "text"]),
+  smsMarketingConsent: z.boolean(),
+  smsNonMarketingConsent: z.boolean(),
   website: z.string().max(0).optional(),
 });
 export type LeadInput = z.infer<typeof leadSchema>;

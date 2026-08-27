@@ -7,10 +7,11 @@ import { leadSchema, type LeadInput } from "@/lib/lead-schema";
 import { services } from "@/lib/content";
 import { site } from "@/lib/site";
 import { Button } from "@/components/ui/button";
+import { SmsConsentFields } from "@/components/sms-consent-fields";
 
 export function LeadForm({ emergency = false, compact = false }: { emergency?: boolean; compact?: boolean }) {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LeadInput>({ resolver: zodResolver(leadSchema), defaultValues: { urgency: emergency ? "emergency" : "non-emergency", preferredContact: "phone", website: "" } });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LeadInput>({ resolver: zodResolver(leadSchema), defaultValues: { urgency: emergency ? "emergency" : "non-emergency", preferredContact: "phone", smsMarketingConsent: false, smsNonMarketingConsent: false, website: "" } });
   async function submit(data: LeadInput) {
     setStatus(null);
     try {
@@ -33,6 +34,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
     <div className="grid gap-5 sm:grid-cols-2">
       <label className={label}>Name *<input className={field} autoComplete="name" {...register("name")} /><FieldError name="name" /></label>
       <label className={label}>Phone *<input className={field} type="tel" autoComplete="tel" {...register("phone")} /><FieldError name="phone" /></label>
+      <SmsConsentFields idPrefix="service-request" className="sm:col-span-2" marketingInputProps={register("smsMarketingConsent")} nonMarketingInputProps={register("smsNonMarketingConsent")} />
       <label className={label}>Email *<input className={field} type="email" autoComplete="email" {...register("email")} /><FieldError name="email" /></label>
       <label className={label}>Service address *<input className={field} autoComplete="street-address" {...register("address")} /><FieldError name="address" /></label>
       <label className={label}>City *<input className={field} list="service-cities" autoComplete="address-level2" {...register("city")} /><datalist id="service-cities">{site.cities.map((city) => <option value={city} key={city} />)}</datalist><FieldError name="city" /></label>

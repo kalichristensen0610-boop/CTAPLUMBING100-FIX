@@ -3,6 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, LoaderCircle, Send, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SmsConsentFields } from "@/components/sms-consent-fields";
 
 type Status = { type: "success" | "error"; message: string } | null;
 
@@ -55,6 +56,7 @@ export function EmploymentForm() {
       <label className={label}>Full name *<input name="name" className={field} autoComplete="name" minLength={2} maxLength={100} required /></label>
       <label className={label}>Email address *<input name="email" className={field} type="email" autoComplete="email" maxLength={150} required /></label>
       <label className={label}>Phone number *<input name="phone" className={field} type="tel" autoComplete="tel" minLength={7} maxLength={30} required /></label>
+      <SmsConsentFields idPrefix="employment" className="sm:col-span-2" />
       <label className={label}>Position applying for *<select name="position" className={field} required><option value="">Select a position</option><option>Plumber</option><option>Journeyman Plumber</option><option>Other</option></select></label>
     </div>
     <label className={`${label} mt-5`}>Resume *<span className="mt-2 flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 text-center"><Upload className="mb-2 text-copper-dark" /><span>Upload PDF, DOC, or DOCX</span><span className="mt-1 text-xs font-normal text-slate-500">Maximum file size is 5 MB</span><input name="resume" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="mt-3 max-w-full text-sm" required /></span></label>
