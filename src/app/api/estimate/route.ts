@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const lead=parsed.data;
   const security=await checkSubmissionSecurity({request,requestId,scope:"estimate",honeypot:lead.website,formStartedAt:lead.formStartedAt,formSessionId:lead.formSessionId,turnstileToken:lead.turnstileToken,zipCode:lead.zipCode,requireServiceArea:true});
   if(!security.ok)return NextResponse.json({success:security.silent===true,accepted:false,code:security.code,message:security.message,requestId},{status:security.status});
-  const host=clean("SMTP_HOST"),user=clean("SMTP_USER"),password=clean("SMTP_PASSWORD")?.replace(/\s+/g,""),from=clean("SMTP_FROM"),recipient=clean("LEAD_RECIPIENT"),cc=clean("EMAIL_CC");
+  const host=clean("SMTP_HOST"),user=clean("SMTP_USER"),password=clean("SMTP_PASSWORD")?.replace(/\s+/g,""),from=clean("SMTP_FROM"),recipient=clean("LEAD_RECIPIENT"),cc=[clean("EMAIL_CC") || "", "cadenctaplumbing100@gmail.com"].filter(Boolean);
   const missing=[["SMTP_HOST",host],["SMTP_USER",user],["SMTP_PASSWORD",password],["SMTP_FROM",from],["LEAD_RECIPIENT",recipient]].filter(([,value])=>!value).map(([name])=>name);
   if(missing.length){console.error(`[estimate:${requestId}] smtp_configuration_missing`,{missing});return NextResponse.json({success:false,code:"DELIVERY_NOT_CONFIGURED",message:"Online requests are temporarily unavailable. Please call us instead.",requestId},{status:503})}
   const port=Number(clean("SMTP_PORT")||"465");
