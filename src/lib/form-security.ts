@@ -57,7 +57,7 @@ function rateAllowed(scope: string, ip: string, sessionId: string) {
 async function verifyTurnstile(token: string, ip: string, requestId: string) {
   const secret = process.env.TURNSTILE_SECRET_KEY?.trim();
   if (!secret) {
-    console.error(`[form-security:${requestId}] turnstile_configuration_missing`);
+    console.warn(`[form-security:${requestId}] turnstile_configuration_missing`);
     return { ok: false, configured: false };
   }
   if (!token || token.length > 2_048) return { ok: false, configured: true };
@@ -109,6 +109,10 @@ export async function checkSubmissionSecurity(input: SecurityInput): Promise<Sec
     return { ok: false, status: 422, code: "OUTSIDE_SERVICE_AREA", message: outsideServiceAreaMessage };
   }
   const turnstile = await verifyTurnstile(input.turnstileToken || "", ip, input.requestId);
+  if (!turnstile.configured && !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
+    console.warn(`[form-security:${input.requestId}] turnstile_not_enabled`, { scope: input.scope });
+    return { ok: true };
+  }
   if (!turnstile.ok) return { ok: false, status: turnstile.configured ? 400 : 503, code: turnstile.configured ? "BOT_CHECK_FAILED" : "BOT_CHECK_UNAVAILABLE", message: turnstile.configured ? "Please complete the security check and try again." : "Online requests are temporarily unavailable. Please call us instead." };
   return { ok: true };
 }
