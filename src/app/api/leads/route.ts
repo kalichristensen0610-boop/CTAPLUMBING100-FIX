@@ -2,27 +2,15 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { leadSchema } from "@/lib/lead-schema";
+import { checkSubmissionSecurity, sanitizeObject } from "@/lib/form-security";
 
 export const runtime = "nodejs";
-const attempts = new Map<string, { count: number; reset: number }>();
 const defaultOrigins = [
   "https://ctaplumbing100.com",
   "https://www.ctaplumbing100.com",
   "https://darkslategray-snake-394369.hostingersite.com",
   "https://mediumaquamarine-toad-626861.hostingersite.com",
 ];
-
-function allowed(ip: string) {
-  const now = Date.now();
-  const item = attempts.get(ip);
-  if (!item || item.reset < now) {
-    attempts.set(ip, { count: 1, reset: now + 10 * 60_000 });
-    return true;
-  }
-  if (item.count >= 5) return false;
-  item.count += 1;
-  return true;
-}
 
 function env(name: string) {
   const value = process.env[name]?.trim();
@@ -79,20 +67,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, code: "ORIGIN_REJECTED", message: "This request is not allowed.", requestId }, { status: 403 });
   }
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (!allowed(ip)) return NextResponse.json({ success: false, code: "RATE_LIMITED", message: "Too many requests. Please call us or try again later.", requestId }, { status: 429 });
   const length = Number(request.headers.get("content-length") || 0);
   if (length > 20_000) return NextResponse.json({ success: false, code: "TOO_LARGE", message: "The request is too large.", requestId }, { status: 413 });
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = sanitizeObject(await request.json());
   } catch {
     return NextResponse.json({ success: false, code: "INVALID_JSON", message: "The request could not be read.", requestId }, { status: 400 });
   }
   const parsed = leadSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ success: false, code: "VALIDATION_ERROR", message: "Please review the highlighted information.", errors: parsed.error.flatten().fieldErrors, requestId }, { status: 400 });
-  if (parsed.data.website) return NextResponse.json({ success: true, code: "ACCEPTED", message: "Thanks. Your request has been received.", requestId });
+  if (!parsed.success) return NextResponse.json({ success: false, accepted: false, code: "VALIDATION_ERROR", message: "Please review the highlighted information.", errors: parsed.error.flatten().fieldErrors, requestId }, { status: 400 });
+  const lead = parsed.data;
+  const security = await checkSubmissionSecurity({ request, requestId, scope: "general-lead", honeypot: lead.website, formStartedAt: lead.formStartedAt, formSessionId: lead.formSessionId, turnstileToken: lead.turnstileToken, zipCode: lead.zipCode, requireServiceArea: true });
+  if (!security.ok) return NextResponse.json({ success: security.silent === true, accepted: false, code: security.code, message: security.message, requestId }, { status: security.status });
 
   const host = env("SMTP_HOST");
   const user = env("SMTP_USER");
@@ -108,8 +96,8 @@ export async function POST(request: Request) {
 
   if (missing.length) {
     console.error(`[leads:${requestId}] smtp_configuration_missing`, { missing });
-    if (process.env.NODE_ENV === "production") return NextResponse.json({ success: false, code: "DELIVERY_NOT_CONFIGURED", message: "Online requests are temporarily unavailable. Please call us instead.", requestId }, { status: 503 });
-    return NextResponse.json({ success: true, code: "DEV_ACCEPTED", message: "Development mode: validated successfully. Configure SMTP to deliver requests.", requestId });
+    if (process.env.NODE_ENV === "production") return NextResponse.json({ success: false, accepted: false, code: "DELIVERY_NOT_CONFIGURED", message: "Online requests are temporarily unavailable. Please call us instead.", requestId }, { status: 503 });
+    return NextResponse.json({ success: true, accepted: true, code: "DEV_ACCEPTED", message: "Development mode: validated successfully. Configure SMTP to deliver requests.", requestId });
   }
 
   const configuredPort = Number(env("SMTP_PORT") || "465");
@@ -122,7 +110,6 @@ export async function POST(request: Request) {
     const transporter = nodemailer.createTransport({ host, port, secure, auth: { user, pass: password } });
     await transporter.verify();
     console.info(`[leads:${requestId}] smtp_authenticated`, { provider: host === "smtp.gmail.com" ? "gmail" : "custom" });
-    const lead = parsed.data;
     await transporter.sendMail({
       from,
       to: recipient,
@@ -132,11 +119,11 @@ export async function POST(request: Request) {
       text: [`Name: ${lead.name}`, `Phone: ${lead.phone}`, `Email: ${lead.email}`, `Address: ${lead.address}, ${lead.city}`, `Service: ${lead.service}`, `Urgency: ${lead.urgency}`, `Preferred contact: ${lead.preferredContact}`, `Transactional SMS consent: ${lead.smsTransactionalConsent ? "Yes" : "No"}`, `Marketing SMS consent: ${lead.smsMarketingConsent ? "Yes" : "No"}`, "", lead.message].join("\n"),
     });
     console.info(`[leads:${requestId}] smtp_delivered`);
-    return NextResponse.json({ success: true, code: "DELIVERED", message: "Thank you. Your request was sent, and we’ll follow up using your preferred contact method.", requestId });
+    return NextResponse.json({ success: true, accepted: true, code: "DELIVERED", message: "Thank you. Your request was sent, and we’ll follow up using your preferred contact method.", requestId });
   } catch (error) {
     const diagnostic = safeSmtpError(error, password, user);
     const event = diagnostic.code === "EAUTH" ? "smtp_authentication_failed" : ["ECONNECTION", "ETIMEDOUT", "ESOCKET"].includes(diagnostic.code) ? "smtp_connection_failed" : "smtp_delivery_failed";
     console.error(`[leads:${requestId}] ${event}`, diagnostic);
-    return NextResponse.json({ success: false, code: "DELIVERY_FAILED", message: "We could not send your request. Please call us or try again shortly.", requestId }, { status: 502 });
+    return NextResponse.json({ success: false, accepted: false, code: "DELIVERY_FAILED", message: "We could not send your request. Please call us or try again shortly.", requestId }, { status: 502 });
   }
 }

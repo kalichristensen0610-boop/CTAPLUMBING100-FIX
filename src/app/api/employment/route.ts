@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { z } from "zod";
+import { checkSubmissionSecurity, sanitizeText } from "@/lib/form-security";
 
 export const runtime = "nodejs";
 const applicationSchema = z.object({
@@ -12,15 +13,11 @@ const applicationSchema = z.object({
   smsMarketingConsent: z.boolean(),
   position: z.enum(["Plumber", "Journeyman Plumber", "Other"]),
   message: z.string().trim().max(2000),
-  website: z.string().max(0),
+  website: z.string().max(200),
+  formStartedAt: z.coerce.number(),
+  formSessionId: z.string().max(100),
+  turnstileToken: z.string().max(2048),
 });
-const attempts = new Map<string, { count: number; reset: number }>();
-
-function allowed(ip: string) {
-  const now = Date.now(); const item = attempts.get(ip);
-  if (!item || item.reset < now) { attempts.set(ip, { count: 1, reset: now + 30 * 60_000 }); return true; }
-  if (item.count >= 3) return false; item.count += 1; return true;
-}
 
 export async function POST(request: Request) {
   const requestId = randomUUID();
@@ -28,13 +25,13 @@ export async function POST(request: Request) {
     contentType: request.headers.get("content-type") || "none",
     contentLength: request.headers.get("content-length") || "unknown",
   });
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
-  if (!allowed(ip)) return NextResponse.json({ success: false, code: "RATE_LIMITED", message: "Too many applications were submitted. Please try again later." }, { status: 429 });
   let form: FormData;
   try { form = await request.formData(); } catch { return NextResponse.json({ success: false, code: "INVALID_FORM", message: "The application could not be read." }, { status: 400 }); }
-  const parsed = applicationSchema.safeParse({ name: form.get("name"), email: form.get("email"), phone: form.get("phone"), smsTransactionalConsent: form.get("smsTransactionalConsent") === "true", smsMarketingConsent: form.get("smsMarketingConsent") === "true", position: form.get("position"), message: form.get("message") || "", website: form.get("website") || "" });
-  if (!parsed.success) return NextResponse.json({ success: false, code: "VALIDATION_ERROR", message: "Please review the application information and try again." }, { status: 400 });
-  if (parsed.data.website) return NextResponse.json({ success: true, code: "ACCEPTED", message: "Thank you. Your application has been received." });
+  const parsed = applicationSchema.safeParse({ name: sanitizeText(form.get("name"), 100), email: sanitizeText(form.get("email"), 150), phone: sanitizeText(form.get("phone"), 30), smsTransactionalConsent: form.get("smsTransactionalConsent") === "true", smsMarketingConsent: form.get("smsMarketingConsent") === "true", position: form.get("position"), message: sanitizeText(form.get("message") || "", 2000), website: sanitizeText(form.get("website") || "", 200), formStartedAt: form.get("formStartedAt"), formSessionId: sanitizeText(form.get("formSessionId"), 100), turnstileToken: sanitizeText(form.get("turnstileToken"), 2048) });
+  if (!parsed.success) return NextResponse.json({ success: false, accepted: false, code: "VALIDATION_ERROR", message: "Please review the application information and try again." }, { status: 400 });
+  const applicant = parsed.data;
+  const security = await checkSubmissionSecurity({ request, requestId, scope: "employment", honeypot: applicant.website, formStartedAt: applicant.formStartedAt, formSessionId: applicant.formSessionId, turnstileToken: applicant.turnstileToken });
+  if (!security.ok) return NextResponse.json({ success: security.silent === true, accepted: false, code: security.code, message: security.message, requestId }, { status: security.status });
   const resume = form.get("resume");
   if (!(resume instanceof File) || resume.size === 0) return NextResponse.json({ success: false, code: "RESUME_REQUIRED", message: "Please attach your resume." }, { status: 400 });
   const extension = resume.name.split(".").pop()?.toLowerCase();
@@ -49,11 +46,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, code: "DEV_ACCEPTED", message: "Development mode: the application was validated successfully. Configure SMTP to deliver applications." });
   }
   try {
-    const applicant = parsed.data;
     const transporter = nodemailer.createTransport({ host: SMTP_HOST, port: Number(SMTP_PORT || 587), secure: SMTP_SECURE === "true", auth: { user: SMTP_USER, pass: SMTP_PASSWORD } });
     await transporter.sendMail({ from: SMTP_FROM, to: recipient, cc, replyTo: applicant.email, subject: `Employment application for ${applicant.position}`, text: [`Name: ${applicant.name}`, `Email: ${applicant.email}`, `Phone: ${applicant.phone}`, `Transactional SMS consent: ${applicant.smsTransactionalConsent ? "Yes" : "No"}`, `Marketing SMS consent: ${applicant.smsMarketingConsent ? "Yes" : "No"}`, `Position: ${applicant.position}`, "", "Additional information:", applicant.message || "None provided"].join("\n"), attachments: [{ filename: resume.name, content: Buffer.from(await resume.arrayBuffer()), contentType: resume.type || undefined }] });
     console.info(`[employment:${requestId}] smtp_delivered`);
-    return NextResponse.json({ success: true, code: "DELIVERED", message: "Thank you. Your application has been submitted successfully.", requestId });
+    return NextResponse.json({ success: true, accepted: true, code: "DELIVERED", message: "Thank you. Your application has been submitted successfully.", requestId });
   } catch (error) {
     const smtpError = error as { name?: string; message?: string; code?: string; command?: string; responseCode?: number };
     let message = smtpError?.message || "Unknown employment delivery error";

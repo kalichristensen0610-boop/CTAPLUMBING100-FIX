@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, LoaderCircle, Send } from "lucide-react";
@@ -8,23 +8,34 @@ import { services } from "@/lib/content";
 import { site } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { SmsConsentFields } from "@/components/sms-consent-fields";
+import { TurnstileField } from "@/components/turnstile-field";
+import { getFormSessionId } from "@/lib/form-client";
 
 export function LeadForm({ emergency = false, compact = false }: { emergency?: boolean; compact?: boolean }) {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileReset, setTurnstileReset] = useState(0);
+  const startedAt = useRef(Date.now());
+  const handleTurnstile = useCallback((token: string) => setTurnstileToken(token), []);
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<LeadInput>({ resolver: zodResolver(leadSchema), defaultValues: { urgency: emergency ? "emergency" : "non-emergency", preferredContact: "phone", smsTransactionalConsent: false, smsMarketingConsent: false, website: "" } });
   async function submit(data: LeadInput) {
     setStatus(null);
     try {
-      const response = await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+      const payload = { ...data, formStartedAt: startedAt.current, formSessionId: getFormSessionId(), turnstileToken };
+      const response = await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json().catch(() => ({ message: "The server returned an unreadable response." }));
       if (!response.ok) {
         console.error("Contact form request failed", { status: response.status, code: result.code || "UNKNOWN", message: result.message, requestId: result.requestId });
         throw new Error(result.message || "We could not send your request.");
       }
-      setStatus({ type: "success", message: result.message }); reset();
+      if (result.accepted !== true) return;
+      setStatus({ type: "success", message: result.message }); reset(); startedAt.current = Date.now();
     } catch (error) {
       console.error("Contact form submission error", { message: error instanceof Error ? error.message : "Unknown request error" });
       setStatus({ type: "error", message: error instanceof Error ? error.message : "Please call us or try again." });
+    } finally {
+      setTurnstileToken("");
+      setTurnstileReset((value) => value + 1);
     }
   }
   const field = "mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-navy outline-none transition focus:border-copper focus:ring-2 focus:ring-copper/20";
@@ -37,6 +48,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
       <label className={label}>Email *<input className={field} type="email" autoComplete="email" {...register("email")} /><FieldError name="email" /></label>
       <label className={label}>Service address *<input className={field} autoComplete="street-address" {...register("address")} /><FieldError name="address" /></label>
       <label className={label}>City *<input className={field} list="service-cities" autoComplete="address-level2" {...register("city")} /><datalist id="service-cities">{site.cities.map((city) => <option value={city} key={city} />)}</datalist><FieldError name="city" /></label>
+      <label className={label}>ZIP code *<input className={field} inputMode="numeric" autoComplete="postal-code" maxLength={10} {...register("zipCode")} /><FieldError name="zipCode" /></label>
       <label className={label}>Service needed *<select className={field} {...register("service")}><option value="">Select a service</option>{services.map((service) => <option value={service.name} key={service.slug}>{service.name}</option>)}</select><FieldError name="service" /></label>
       <label className={label}>Request type *<select className={field} {...register("urgency")}><option value="non-emergency">Not an emergency</option><option value="emergency">Emergency</option></select></label>
       <label className={label}>Preferred contact *<select className={field} {...register("preferredContact")}><option value="phone">Phone call</option><option value="text">Text message</option><option value="email">Email</option></select></label>
@@ -45,6 +57,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
     <label className="sr-only" aria-hidden="true">Website<input tabIndex={-1} autoComplete="off" {...register("website")} /></label>
     {status && <div role="status" className={`mt-5 flex gap-3 rounded-lg p-4 ${status.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>{status.type === "success" ? <CheckCircle2 className="shrink-0" /> : <AlertCircle className="shrink-0" />}<p>{status.message}</p></div>}
     <SmsConsentFields idPrefix="service-request" className="mt-6" transactionalInputProps={register("smsTransactionalConsent")} marketingInputProps={register("smsMarketingConsent")} />
+    <TurnstileField onToken={handleTurnstile} resetSignal={turnstileReset} />
     <Button type="submit" size="lg" variant={emergency ? "emergency" : "default"} className={`${compact ? "" : "w-full"} mt-6`} disabled={isSubmitting}>{isSubmitting ? <><LoaderCircle className="animate-spin" />Sending…</> : <><Send />Request Service</>}</Button>
     <p className="mt-4 text-sm leading-6 text-slate-500">Submitting this form does not confirm an appointment. For urgent plumbing problems, call our 24/7 emergency line.</p>
   </form>;

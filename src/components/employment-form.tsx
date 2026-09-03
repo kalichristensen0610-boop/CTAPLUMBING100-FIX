@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useCallback, useRef, useState } from "react";
 import { AlertCircle, CheckCircle2, LoaderCircle, Send, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SmsConsentFields } from "@/components/sms-consent-fields";
+import { TurnstileField } from "@/components/turnstile-field";
+import { getFormSessionId } from "@/lib/form-client";
 
 type Status = { type: "success" | "error"; message: string } | null;
 
@@ -11,6 +13,10 @@ export function EmploymentForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<Status>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileReset, setTurnstileReset] = useState(0);
+  const startedAt = useRef(Date.now());
+  const handleTurnstile = useCallback((token: string) => setTurnstileToken(token), []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,6 +24,7 @@ export function EmploymentForm() {
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
     const data = new FormData(form);
+    data.set("formStartedAt", String(startedAt.current)); data.set("formSessionId", getFormSessionId()); data.set("turnstileToken", turnstileToken);
     const resume = data.get("resume");
     if (!(resume instanceof File) || resume.size === 0) {
       setStatus({ type: "error", message: "Please attach your resume." }); return;
@@ -41,12 +48,13 @@ export function EmploymentForm() {
       }
       if (!response.ok) console.error("Employment form request failed", { status: response.status, code: result.code || "NON_JSON_RESPONSE", message: result.message, requestId: result.requestId });
       if (!response.ok) throw new Error(result.message || "We could not submit your application.");
+      if ((result as { accepted?: boolean }).accepted !== true) return;
       setStatus({ type: "success", message: result.message || "Thank you. Your application has been submitted successfully." });
       formRef.current?.reset();
     } catch (error) {
       console.error("Employment form submission error", { message: error instanceof Error ? error.message : "Unknown request error" });
       setStatus({ type: "error", message: error instanceof Error ? error.message : "Please try again or contact us directly." });
-    } finally { setSubmitting(false); }
+    } finally { setSubmitting(false); setTurnstileToken(""); setTurnstileReset((value) => value + 1); }
   }
 
   const field = "mt-2 min-h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-navy outline-none transition focus:border-copper focus:ring-2 focus:ring-copper/20";
@@ -63,6 +71,7 @@ export function EmploymentForm() {
     <label className="sr-only" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
     {status && <div role="status" className={`mt-5 flex gap-3 rounded-lg p-4 ${status.type === "success" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>{status.type === "success" ? <CheckCircle2 className="shrink-0" /> : <AlertCircle className="shrink-0" />}<p>{status.message}</p></div>}
     <SmsConsentFields idPrefix="employment" className="mt-6" />
+    <TurnstileField onToken={handleTurnstile} resetSignal={turnstileReset} />
     <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>{submitting ? <><LoaderCircle className="animate-spin" />Submitting…</> : <><Send />Submit Application</>}</Button>
     <p className="mt-4 text-sm leading-6 text-slate-500">Submitting an application does not guarantee employment or an interview.</p>
   </form>;
