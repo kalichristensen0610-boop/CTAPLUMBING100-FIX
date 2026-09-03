@@ -22,7 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return <html lang="en"><head><script async src="https://www.googletagmanager.com/gtag/js?id=AW-18413989597" /><script dangerouslySetInnerHTML={{ __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'AW-18413989597');` }} />{/* Meta Pixel Code */}<script dangerouslySetInnerHTML={{ __html: `!function(f,b,e,v,n,t,s)
+gtag('config', 'AW-18413989597');` }} />{/* Meta Pixel Code */}<Script id="meta-pixel" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
