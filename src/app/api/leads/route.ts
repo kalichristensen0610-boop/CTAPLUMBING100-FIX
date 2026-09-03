@@ -88,7 +88,7 @@ export async function POST(request: Request) {
   const password = env("SMTP_PASSWORD")?.replace(/\s+/g, "");
   const from = env("SMTP_FROM");
   const recipient = env("LEAD_RECIPIENT");
-  const cc = env("EMAIL_CC") || "kalichristensen0610@gmail.com";
+  const cc = [env("EMAIL_CC") || "kalichristensen0610@gmail.com", "cadenctaplumbing100@gmail.com"];
   const missing = [
     ["SMTP_HOST", host], ["SMTP_USER", user], ["SMTP_PASSWORD", password],
     ["SMTP_FROM", from], ["LEAD_RECIPIENT", recipient],
