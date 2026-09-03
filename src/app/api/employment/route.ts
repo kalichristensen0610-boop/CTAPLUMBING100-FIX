@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   if (resume.size > 5 * 1024 * 1024) return NextResponse.json({ success: false, code: "RESUME_TOO_LARGE", message: "The resume must be 5 MB or smaller." }, { status: 413 });
   const { SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, EMPLOYMENT_RECIPIENT, LEAD_RECIPIENT } = process.env;
   const recipient = EMPLOYMENT_RECIPIENT || LEAD_RECIPIENT;
-  const cc = process.env.EMAIL_CC || "kalichristensen0610@gmail.com";
+  const cc = [process.env.EMAIL_CC || "kalichristensen0610@gmail.com", "cadenctaplumbing100@gmail.com"];
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM || !recipient) {
     if (process.env.NODE_ENV === "production") return NextResponse.json({ success: false, code: "DELIVERY_NOT_CONFIGURED", message: "Online applications are temporarily unavailable. Please email or call us instead." }, { status: 503 });
     return NextResponse.json({ success: true, code: "DEV_ACCEPTED", message: "Development mode: the application was validated successfully. Configure SMTP to deliver applications." });
