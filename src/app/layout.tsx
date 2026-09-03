@@ -22,5 +22,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return <html lang="en"><head><script async src="https://www.googletagmanager.com/gtag/js?id=AW-18413989597" /><script dangerouslySetInnerHTML={{ __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'AW-18413989597');` }} /></head><body className="font-sans antialiased"><JsonLd data={localBusiness} /><SiteShell>{children}</SiteShell><Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" /><Script src="https://api.christensenandcoagency.com/js/external-tracking.js" data-tracking-id="tk_8654988435c84995a3a96b88674a170b" strategy="afterInteractive" /><Script type="text/javascript" src="//cdn.callrail.com/companies/693647407/62b48e69051cdc7decb0/12/swap.js" strategy="afterInteractive" /></body></html>;
+gtag('config', 'AW-18413989597');` }} />{/* Meta Pixel Code */}<script dangerouslySetInnerHTML={{ __html: `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1066143976321475');
+fbq('track', 'PageView');` }} /><noscript dangerouslySetInnerHTML={{ __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1066143976321475&ev=PageView&noscript=1" />` }} />{/* End Meta Pixel Code */}</head><body className="font-sans antialiased"><JsonLd data={localBusiness} /><SiteShell>{children}</SiteShell><Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" /><Script src="https://api.christensenandcoagency.com/js/external-tracking.js" data-tracking-id="tk_8654988435c84995a3a96b88674a170b" strategy="afterInteractive" /><Script type="text/javascript" src="//cdn.callrail.com/companies/693647407/62b48e69051cdc7decb0/12/swap.js" strategy="afterInteractive" /></body></html>;
 }
