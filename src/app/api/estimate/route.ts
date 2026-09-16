@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { leadNotification } from "@/lib/lead-notification";
 import { z } from "zod";
 import { checkSubmissionSecurity, sanitizeText } from "@/lib/form-security";
 
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
   const parsed=schema.safeParse({name:sanitizeText(form.get("name"),100),phone:sanitizeText(form.get("phone"),30),zipCode:sanitizeText(form.get("zipCode"),10),service:sanitizeText(form.get("service"),100),smsTransactionalConsent:form.get("smsTransactionalConsent")==="true",smsMarketingConsent:form.get("smsMarketingConsent")==="true",source:form.get("source"),website:sanitizeText(form.get("website")||"",200),formStartedAt:form.get("formStartedAt"),formSessionId:sanitizeText(form.get("formSessionId"),100),turnstileToken:sanitizeText(form.get("turnstileToken"),2048)});
   if(!parsed.success)return NextResponse.json({success:false,accepted:false,code:"VALIDATION_ERROR",message:"Please complete every required field.",requestId},{status:400});
   const lead=parsed.data;
-  const security=await checkSubmissionSecurity({request,requestId,scope:"estimate",honeypot:lead.website,formStartedAt:lead.formStartedAt,formSessionId:lead.formSessionId,turnstileToken:lead.turnstileToken,zipCode:lead.zipCode,requireServiceArea:true});
+  const security=await checkSubmissionSecurity({request,requestId,scope:"estimate",honeypot:lead.website,formStartedAt:lead.formStartedAt,formSessionId:lead.formSessionId,turnstileToken:lead.turnstileToken,zipCode:lead.zipCode,requireServiceArea:false});
   if(!security.ok)return NextResponse.json({success:security.silent===true,accepted:false,code:security.code,message:security.message,requestId},{status:security.status});
   const host=clean("SMTP_HOST"),user=clean("SMTP_USER"),password=clean("SMTP_PASSWORD")?.replace(/\s+/g,""),from=clean("SMTP_FROM"),recipient=clean("LEAD_RECIPIENT"),cc=[clean("EMAIL_CC") || "", "cadenctaplumbing100@gmail.com"].filter(Boolean);
   const missing=[["SMTP_HOST",host],["SMTP_USER",user],["SMTP_PASSWORD",password],["SMTP_FROM",from],["LEAD_RECIPIENT",recipient]].filter(([,value])=>!value).map(([name])=>name);
@@ -32,7 +33,11 @@ export async function POST(request: Request) {
   const port=Number(clean("SMTP_PORT")||"465");
   try{
     const transporter=nodemailer.createTransport({host,port,secure:port===465||clean("SMTP_SECURE")?.toLowerCase()==="true",auth:{user,pass:password}});
-    await transporter.sendMail({from,to:recipient,cc,subject:`Estimate funnel request: ${lead.service}`,text:["Source: estimate-a paid advertising landing page",`Name: ${lead.name}`,`Phone: ${lead.phone}`,`ZIP code: ${lead.zipCode}`,`Service: ${lead.service}`,`Transactional SMS consent: ${lead.smsTransactionalConsent?"Yes":"No"}`,`Marketing SMS consent: ${lead.smsMarketingConsent?"Yes":"No"}`].join("\n")});
+    await transporter.sendMail({from,to:recipient,cc,subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
+      { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["ZIP code", lead.zipCode]] },
+      { title: "Service request", rows: [["Requested service", lead.service], ["Source", "estimate-a landing page"]] },
+      { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },
+    ])});
     console.info(`[estimate:${requestId}] smtp_delivered`);
     return NextResponse.json({success:true,accepted:true,code:"DELIVERED",message:"Thank you. Your estimate request was sent. We’ll follow up soon.",requestId});
   }catch(error){const e=error as {code?:string;message?:string};let message=e.message||"Unknown SMTP error";for(const secret of [password,user])if(secret)message=message.split(secret).join("[redacted]");console.error(`[estimate:${requestId}] smtp_delivery_failed`,{code:e.code||"UNKNOWN",message:message.slice(0,500)});return NextResponse.json({success:false,code:"DELIVERY_FAILED",message:"We could not send your estimate request. Please call us or try again shortly.",requestId},{status:502})}

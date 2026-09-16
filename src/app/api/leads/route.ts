@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import { leadNotification } from "@/lib/lead-notification";
 import { leadSchema } from "@/lib/lead-schema";
 import { checkSubmissionSecurity, sanitizeObject } from "@/lib/form-security";
 
@@ -116,7 +117,11 @@ export async function POST(request: Request) {
       cc,
       replyTo: lead.email,
       subject: `${lead.urgency === "emergency" ? "URGENT: " : ""}Website request for ${lead.service}`,
-      text: [`Name: ${lead.name}`, `Phone: ${lead.phone}`, `Email: ${lead.email}`, `Address: ${lead.address}, ${lead.city}`, `Service: ${lead.service}`, `Urgency: ${lead.urgency}`, `Preferred contact: ${lead.preferredContact}`, `Transactional SMS consent: ${lead.smsTransactionalConsent ? "Yes" : "No"}`, `Marketing SMS consent: ${lead.smsMarketingConsent ? "Yes" : "No"}`, "", lead.message].join("\n"),
+      ...leadNotification("New website service request", [
+        { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["Email", lead.email], ["Address", `${lead.address}, ${lead.city}`], ["ZIP code", lead.zipCode], ["Preferred contact", lead.preferredContact]] },
+        { title: "Service request", rows: [["Requested service", lead.service], ["Urgency", lead.urgency], ["Customer message", lead.message]] },
+        { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },
+      ]),
     });
     console.info(`[leads:${requestId}] smtp_delivered`);
     return NextResponse.json({ success: true, accepted: true, code: "DELIVERED", message: "Thank you. Your request was sent, and we’ll follow up using your preferred contact method.", requestId });
