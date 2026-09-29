@@ -1,3 +1,4 @@
+import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
@@ -18,6 +19,7 @@ function clean(name: string) { const value=process.env[name]?.trim(); if(!value)
 function sameOrigin(request:Request){const origin=request.headers.get("origin");if(!origin)return true;try{const host=request.headers.get("x-forwarded-host")?.split(",")[0]?.trim()||request.headers.get("host")?.trim();return Boolean(host&&new URL(origin).host.toLowerCase()===host.toLowerCase())}catch{return false}}
 
 export async function POST(request: Request) {
+  const receivedAt=new Date();
   const requestId=randomUUID();
   console.info(`[estimate:${requestId}] endpoint_received`,{contentType:request.headers.get("content-type")||"none"});
   if(!sameOrigin(request))return NextResponse.json({success:false,code:"ORIGIN_REJECTED",message:"This request is not allowed.",requestId},{status:403});
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
   const port=Number(clean("SMTP_PORT")||"465");
   try{
     const transporter=nodemailer.createTransport({host,port,secure:port===465||clean("SMTP_SECURE")?.toLowerCase()==="true",auth:{user,pass:password}});
-    await transporter.sendMail({from,to:recipient,cc,subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
+    await transporter.sendMail({from,to:recipient,cc:withAfterHoursRecipient(cc, receivedAt),subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
       { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["ZIP code", lead.zipCode]] },
       { title: "Service request", rows: [["Requested service", lead.service], ["Source", "estimate-a landing page"]] },
       { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },
@@ -42,3 +44,4 @@ export async function POST(request: Request) {
     return NextResponse.json({success:true,accepted:true,code:"DELIVERED",message:"Thank you. Your estimate request was sent. We’ll follow up soon.",requestId});
   }catch(error){const e=error as {code?:string;message?:string};let message=e.message||"Unknown SMTP error";for(const secret of [password,user])if(secret)message=message.split(secret).join("[redacted]");console.error(`[estimate:${requestId}] smtp_delivery_failed`,{code:e.code||"UNKNOWN",message:message.slice(0,500)});return NextResponse.json({success:false,code:"DELIVERY_FAILED",message:"We could not send your estimate request. Please call us or try again shortly.",requestId},{status:502})}
 }
+
