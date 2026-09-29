@@ -1,3 +1,4 @@
+import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
@@ -56,6 +57,7 @@ function safeSmtpError(error: unknown, password?: string, username?: string) {
 }
 
 export async function POST(request: Request) {
+  const receivedAt = new Date();
   const requestId = randomUUID();
   const origin = request.headers.get("origin")?.replace(/\/$/, "");
   console.info(`[leads:${requestId}] endpoint_received`, {
@@ -114,7 +116,7 @@ export async function POST(request: Request) {
     await transporter.sendMail({
       from,
       to: recipient,
-      cc,
+      cc: withAfterHoursRecipient(cc, receivedAt),
       replyTo: lead.email,
       subject: `${lead.urgency === "emergency" ? "URGENT: " : ""}Website request for ${lead.service}`,
       ...leadNotification("New website service request", [
@@ -132,3 +134,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, accepted: false, code: "DELIVERY_FAILED", message: "We could not send your request. Please call us or try again shortly.", requestId }, { status: 502 });
   }
 }
+
