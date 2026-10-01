@@ -58,6 +58,6 @@ The image uses a multi-stage Node Alpine build and Next.js standalone output. Su
 
 ## After-hours lead routing
 
-Service, campaign, and estimate form emails also CC `1210009225@armailstnr.appspot-mail.com` before 8 a.m. and from 5 p.m. onward Monday–Friday in `America/Denver`, and all day on weekends and the 11 observed nationwide U.S. federal holidays. Existing recipients and CCs remain in place. Employment applications are excluded. The server determines the time; no extra Hostinger environment variable is required. Federal weekend observance follows OPM: https://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays .
+Service, campaign, and estimate form emails also CC `1210009225@armailstnr.appspotmail.com` before 8 a.m. and from 5 p.m. onward Monday–Friday in `America/Denver`, and all day on weekends and the 11 observed nationwide U.S. federal holidays. Existing recipients and CCs remain in place. Employment applications are excluded. The server determines the time; no extra Hostinger environment variable is required. Federal weekend observance follows OPM: https://www.opm.gov/policy-data-oversight/snow-dismissal-procedures/federal-holidays .
 
 Run schedule tests with `node --experimental-strip-types --test tests/after-hours.test.mjs` (Node 22.6+).
