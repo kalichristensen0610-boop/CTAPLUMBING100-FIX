@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
-import { JsonLd } from "@/components/json-ld";
 import { site } from "@/lib/site";
 import { SiteShell } from "@/components/site-shell";
 
@@ -18,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const localBusiness = { "@context": "https://schema.org", "@type": ["LocalBusiness", "Plumber"], "@id": `${site.url}/#business`, name: site.name, url: site.url, telephone: site.phone, email: site.email, image: `${site.url}/images/hero-plumber.webp`, address: { "@type": "PostalAddress", streetAddress: site.address.street, addressLocality: site.address.city, addressRegion: site.address.state, postalCode: site.address.postalCode, addressCountry: site.address.country }, openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "17:00" }], areaServed: site.cities.map((city) => ({ "@type": "City", name: `${city}, Idaho` })) };
+  const localBusiness = { "@context": "https://schema.org", "@type": ["LocalBusiness", "Plumber"], "@id": `${site.url}/#business`, name: site.name, url: site.url, email: site.email, image: `${site.url}/images/hero-plumber.webp`, address: { "@type": "PostalAddress", streetAddress: site.address.street, addressLocality: site.address.city, addressRegion: site.address.state, postalCode: site.address.postalCode, addressCountry: site.address.country }, openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "08:00", closes: "17:00" }], areaServed: site.cities.map((city) => ({ "@type": "City", name: `${city}, Idaho` })) };
   return <html lang="en"><head><script async src="https://www.googletagmanager.com/gtag/js?id=AW-18413989597" /><script dangerouslySetInnerHTML={{ __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
@@ -31,5 +30,5 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '1066143976321475');
-fbq('track', 'PageView');` }} /><noscript dangerouslySetInnerHTML={{ __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1066143976321475&ev=PageView&noscript=1" />` }} />{/* End Meta Pixel Code */}</head><body className="font-sans antialiased"><JsonLd data={localBusiness} /><SiteShell>{children}</SiteShell><Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" /><Script src="https://api.christensenandcoagency.com/js/external-tracking.js" data-tracking-id="tk_8654988435c84995a3a96b88674a170b" strategy="afterInteractive" /><Script type="text/javascript" src="//cdn.callrail.com/companies/693647407/62b48e69051cdc7decb0/12/swap.js" strategy="afterInteractive" /></body></html>;
+fbq('track', 'PageView');` }} /><noscript dangerouslySetInnerHTML={{ __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1066143976321475&ev=PageView&noscript=1" />` }} />{/* End Meta Pixel Code */}</head><body className="font-sans antialiased"><SiteShell localBusiness={localBusiness}>{children}</SiteShell><Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" /><Script src="https://api.christensenandcoagency.com/js/external-tracking.js" data-tracking-id="tk_8654988435c84995a3a96b88674a170b" strategy="afterInteractive" /></body></html>;
 }

@@ -21,7 +21,7 @@ export type Campaign = {
   qualifier?: string;
 };
 
-const campaignPhone = "(208) 447-9290";
+const campaignPhone = "(208) 682-7263";
 
 export const campaigns: Record<CampaignSlug, Campaign> = {
   "99-drain-cleaning": {
