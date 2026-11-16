@@ -1,13 +1,13 @@
 :root {
   color-scheme: light;
-  --cream: #fffdf8;
-  --sand: #f6efdd;
+  --cream: #fff;
+  --sand: #f3f6fa;
   --ink: #10253f;
-  --red: #791313;
-  --line: #e8e1d2;
+  --red: #765922;
+  --line: #d9e1ea;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--cream); color: var(--ink); font: 17px/1.55 "Inter", system-ui, sans-serif; }
+body { margin: 0; background: var(--cream); color: var(--ink); font: 17px/1.55 "Archivo", system-ui, sans-serif; }
 a { color: inherit; text-underline-offset: .25em; }
 a:focus-visible { outline: 3px solid #b77a45; outline-offset: 5px; }
 .wrap { width: min(1152px, calc(100% - 48px)); margin-inline: auto; }
@@ -16,7 +16,7 @@ a:focus-visible { outline: 3px solid #b77a45; outline-offset: 5px; }
 .brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 800; }
 .brand img { object-fit: contain; }
 .phone { font-weight: 750; white-space: nowrap; }
-.hero { background: radial-gradient(ellipse at 75% 15%, #fffaf0, transparent 65%), var(--sand); }
+.hero { background: radial-gradient(ellipse at 75% 15%, #fff, transparent 65%), var(--sand); }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .94fr); align-items: center; gap: clamp(24px, 5vw, 70px); padding-block: clamp(28px, 5vw, 68px); }
 .label { margin: 0 0 13px; color: var(--red); text-transform: uppercase; letter-spacing: .1em; font-weight: 800; font-size: .77rem; }
 h1, h2 { margin: 0; line-height: 1.04; letter-spacing: -.035em; }
@@ -25,7 +25,7 @@ h2 { font-size: clamp(2rem, 4vw, 3.25rem); }
 .lead { font-size: clamp(1.05rem, 1.8vw, 1.23rem); max-width: 34rem; margin: 20px 0 28px; }
 .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 .button { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 11px 20px; border: 2px solid var(--red); border-radius: 6px; background: var(--red); color: white; text-decoration: none; font-weight: 750; }
-.button:hover { background: #5d0e0e; border-color: #5d0e0e; color: white; }
+.button:hover { background: #5d4418; border-color: #5d4418; color: white; }
 .secondary { background: transparent; color: var(--red); }
 .hero-image { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; }
 .emergency { background: var(--ink); color: var(--cream); }

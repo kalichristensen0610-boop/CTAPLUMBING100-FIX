@@ -28,7 +28,26 @@ const reviews = [
 
 export default function HomePage() { const faqSchema = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })), url: site.url }; return <>
   <JsonLd data={faqSchema} />
-  <section className="relative min-h-[690px] overflow-hidden bg-navy"><Image src="/images/hero-plumber.webp" alt="CTA Plumbing 100 technician carrying professional equipment at a Treasure Valley home" fill priority className="object-cover object-center opacity-45" sizes="100vw" /><div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/90 to-navy/20" /><div className="container relative flex min-h-[690px] items-center py-20"><div className="max-w-3xl text-white"><p className="mb-5 font-black uppercase tracking-[.2em] text-copper-light">Based in Nampa • Treasure Valley service</p><h1 className="font-display text-5xl font-black leading-[.98] tracking-tight sm:text-6xl lg:text-7xl">Professional plumbing across the Treasure Valley.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">Dependable residential and commercial plumbing for Nampa, Boise, Meridian, and surrounding communities, backed by honest communication and respect for your property.</p><div className="mt-8 flex flex-wrap gap-3"><CallNow /><Button variant="outline" size="lg" asChild><Link href="/contact">Request Service <ArrowRight /></Link></Button><Button variant="emergency" size="lg" asChild><Link href="/emergency-plumbing">Emergency Help</Link></Button></div><div className="mt-9 grid max-w-2xl gap-3 text-sm font-semibold sm:grid-cols-3"><span>✓ Residential &amp; commercial</span><span>✓ Clear communication</span><span>✓ Local service focus</span></div></div></div></section>
+  <section className="overflow-hidden border-b border-slate-200 bg-slate-50">
+    <div className="container grid items-center gap-9 py-12 sm:py-16 lg:grid-cols-[1fr_1fr] lg:gap-14 lg:py-20">
+      <div>
+        <p className="eyebrow">Local plumbers in Nampa, Idaho</p>
+        <h1 className="max-w-2xl text-5xl font-black leading-[.99] tracking-tight text-navy sm:text-6xl lg:text-7xl">Plumbing help across the Treasure Valley.</h1>
+        <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-600">From leaks and clogged drains to water heaters and water treatment, our local team helps homeowners and businesses get back to normal.</p>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Button size="lg" asChild><a href="/request-service">Request Service <ArrowRight /></a></Button>
+          <CallNow />
+        </div>
+        <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold text-navy">
+          <li>✓ 24/7 emergency service</li>
+          <li>✓ Residential &amp; commercial</li>
+        </ul>
+      </div>
+      <div className="relative aspect-[5/4] overflow-hidden rounded-2xl bg-navy shadow-xl">
+        <Image src="/images/hero-plumber.webp" alt="CTA Plumbing 100 technician carrying equipment at a Treasure Valley home" fill priority className="object-cover" sizes="(max-width: 1023px) 100vw, 50vw" />
+      </div>
+    </div>
+  </section>
   <EmergencyBar />
   <section className="py-20"><div className="container"><SectionHeading eyebrow="Plumbing services" title="One local team for the plumbing work your property needs." text="From everyday fixture repairs to water heaters, drains, piping, and commercial projects, we help you understand the next step." /><ServiceGrid limit={6} /><div className="mt-8 text-center"><Button variant="navy" asChild><Link href="/services">View all services <ArrowRight /></Link></Button></div></div></section>
   <section className="bg-slate-50 py-20"><SplitImage src="/images/customer-consultation.webp" alt="CTA Plumbing 100 technician explaining plumbing work to a customer"><SectionHeading eyebrow="Why CTA Plumbing 100" title="Service built around clear expectations." /><div className="grid gap-5 sm:grid-cols-2">{[[MessageSquareText,"Honest communication","We explain what we find and the practical options available."],[CalendarCheck,"Reliable scheduling","We communicate about timing and make it easier to plan around the visit."],[ShieldCheck,"Respect for your property","We work thoughtfully in occupied homes and business spaces."],[Wrench,"Useful solutions","Recommendations start with the problem and avoid unsupported sales claims."]].map(([Icon,title,text]) => { const C=Icon as typeof Wrench; return <div key={String(title)}><C className="text-copper-dark" /><h3 className="mt-3 font-black text-navy">{String(title)}</h3><p className="mt-1 leading-7 text-slate-600">{String(text)}</p></div>})}</div></SplitImage></section>
