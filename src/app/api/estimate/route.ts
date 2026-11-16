@@ -1,3 +1,4 @@
+import { serviceLeadRecipients } from "@/lib/service-lead-recipients";
 import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
@@ -29,17 +30,18 @@ export async function POST(request: Request) {
   const lead=parsed.data;
   const security=await checkSubmissionSecurity({request,requestId,scope:"estimate",honeypot:lead.website,formStartedAt:lead.formStartedAt,formSessionId:lead.formSessionId,turnstileToken:lead.turnstileToken,zipCode:lead.zipCode,requireServiceArea:false});
   if(!security.ok)return NextResponse.json({success:security.silent===true,accepted:false,code:security.code,message:security.message,requestId},{status:security.status});
-  const host=clean("SMTP_HOST"),user=clean("SMTP_USER"),password=clean("SMTP_PASSWORD")?.replace(/\s+/g,""),from=clean("SMTP_FROM"),recipient=clean("LEAD_RECIPIENT"),cc=[clean("EMAIL_CC") || "", "cadenctaplumbing100@gmail.com"].filter(Boolean);
-  const missing=[["SMTP_HOST",host],["SMTP_USER",user],["SMTP_PASSWORD",password],["SMTP_FROM",from],["LEAD_RECIPIENT",recipient]].filter(([,value])=>!value).map(([name])=>name);
+  const host=clean("SMTP_HOST"),user=clean("SMTP_USER"),password=clean("SMTP_PASSWORD")?.replace(/\s+/g,""),from=clean("SMTP_FROM"),recipient=serviceLeadRecipients,cc: string[]=[];
+  const missing=[["SMTP_HOST",host],["SMTP_USER",user],["SMTP_PASSWORD",password],["SMTP_FROM",from]].filter(([,value])=>!value).map(([name])=>name);
   if(missing.length){console.error(`[estimate:${requestId}] smtp_configuration_missing`,{missing});return NextResponse.json({success:false,code:"DELIVERY_NOT_CONFIGURED",message:"Online requests are temporarily unavailable. Please call us instead.",requestId},{status:503})}
   const port=Number(clean("SMTP_PORT")||"465");
   try{
     const transporter=nodemailer.createTransport({host,port,secure:port===465||clean("SMTP_SECURE")?.toLowerCase()==="true",auth:{user,pass:password}});
-    await transporter.sendMail({from,to:recipient,cc:withAfterHoursRecipient(cc, receivedAt),subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
+    const delivery = await transporter.sendMail({from,to:recipient,cc:withAfterHoursRecipient(cc, receivedAt),subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
       { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["ZIP code", lead.zipCode]] },
       { title: "Service request", rows: [["Requested service", lead.service], ["Source", "estimate-a landing page"]] },
       { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },
     ])});
+    if (!recipient.every((address) => delivery.accepted.includes(address))) throw new Error("One or more service recipients were rejected");
     console.info(`[estimate:${requestId}] smtp_delivered`);
     return NextResponse.json({success:true,accepted:true,code:"DELIVERED",message:"Thank you. Your estimate request was sent. We’ll follow up soon.",requestId});
   }catch(error){const e=error as {code?:string;message?:string};let message=e.message||"Unknown SMTP error";for(const secret of [password,user])if(secret)message=message.split(secret).join("[redacted]");console.error(`[estimate:${requestId}] smtp_delivery_failed`,{code:e.code||"UNKNOWN",message:message.slice(0,500)});return NextResponse.json({success:false,code:"DELIVERY_FAILED",message:"We could not send your estimate request. Please call us or try again shortly.",requestId},{status:502})}

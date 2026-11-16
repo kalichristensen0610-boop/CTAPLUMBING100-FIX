@@ -1,3 +1,4 @@
+import { serviceLeadRecipients } from "@/lib/service-lead-recipients";
 import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
@@ -90,11 +91,11 @@ export async function POST(request: Request) {
   // Gmail app passwords are often displayed in groups; Gmail expects them without spaces.
   const password = env("SMTP_PASSWORD")?.replace(/\s+/g, "");
   const from = env("SMTP_FROM");
-  const recipient = env("LEAD_RECIPIENT");
-  const cc = [env("EMAIL_CC") || "kalichristensen0610@gmail.com", "cadenctaplumbing100@gmail.com"];
+  const recipient = serviceLeadRecipients;
+  const cc: string[] = [];
   const missing = [
     ["SMTP_HOST", host], ["SMTP_USER", user], ["SMTP_PASSWORD", password],
-    ["SMTP_FROM", from], ["LEAD_RECIPIENT", recipient],
+    ["SMTP_FROM", from],
   ].filter(([, value]) => !value).map(([name]) => name);
 
   if (missing.length) {
@@ -113,7 +114,7 @@ export async function POST(request: Request) {
     const transporter = nodemailer.createTransport({ host, port, secure, auth: { user, pass: password } });
     await transporter.verify();
     console.info(`[leads:${requestId}] smtp_authenticated`, { provider: host === "smtp.gmail.com" ? "gmail" : "custom" });
-    await transporter.sendMail({
+    const delivery = await transporter.sendMail({
       from,
       to: recipient,
       cc: withAfterHoursRecipient(cc, receivedAt),
@@ -125,6 +126,7 @@ export async function POST(request: Request) {
         { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },
       ]),
     });
+    if (!recipient.every((address) => delivery.accepted.includes(address))) throw new Error("One or more service recipients were rejected");
     console.info(`[leads:${requestId}] smtp_delivered`);
     return NextResponse.json({ success: true, accepted: true, code: "DELIVERED", message: "Thank you. Your request was sent, and we’ll follow up using your preferred contact method.", requestId });
   } catch (error) {

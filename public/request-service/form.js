@@ -9,6 +9,34 @@ const success = document.querySelector('#form-success');
 const selections = {};
 let step = 0;
 let requestId;
+const formStartedAt = Date.now();
+let widget;
+let turnstileToken = '';
+const securityReady = fetch('/api/request-service')
+  .then((response) => {
+    if (!response.ok) throw new Error();
+    return response.json();
+  })
+  .then(({ siteKey }) => {
+    if (!siteKey) return;
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.onerror = reject;
+      script.onload = () => window.turnstile.ready(() => {
+        widget = window.turnstile.render('#request-security', {
+          sitekey: siteKey,
+          appearance: 'interaction-only',
+          callback: (token) => { turnstileToken = token; },
+          'expired-callback': () => { turnstileToken = ''; },
+          'error-callback': () => { turnstileToken = ''; }
+        });
+        resolve();
+      });
+      document.head.append(script);
+    });
+  })
+  .then(() => true, () => false);
 
 function showStep(index) {
   step = index;
@@ -46,21 +74,28 @@ form.addEventListener('submit', async (event) => {
   next.textContent = 'Submitting…';
 
   try {
+    if (!await securityReady) throw new Error('The security check could not load. Refresh the page or call us.');
+    if (widget !== undefined && !turnstileToken) throw new Error('Please complete the security check and try again.');
     const response = await fetch('/api/request-service', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...selections, ...contact, id: requestId }),
-      signal: AbortSignal.timeout(12000)
+      body: JSON.stringify({ ...selections, ...contact, id: requestId, formStartedAt, turnstileToken }),
+      signal: AbortSignal.timeout(25000)
     });
-    if (!response.ok || (await response.json()).accepted !== true) throw new Error();
+    const result = await response.json();
+    if (!response.ok || result.accepted !== true) throw new Error(result.message);
     form.reset();
     form.hidden = true;
     success.hidden = false;
     success.focus();
-  } catch {
-    error.textContent = 'We couldn’t confirm your request. Please try again or call (208) 447-9290.';
+  } catch (failure) {
+    error.textContent = failure.message || 'We couldn’t confirm your request. Please try again or call (208) 447-9290.';
     error.hidden = false;
   } finally {
+    if (turnstileToken && widget !== undefined) {
+      turnstileToken = '';
+      window.turnstile.reset(widget);
+    }
     back.disabled = next.disabled = false;
     next.textContent = 'Submit Request';
   }

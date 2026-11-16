@@ -28,7 +28,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
         console.error("Contact form request failed", { status: response.status, code: result.code || "UNKNOWN", message: result.message, requestId: result.requestId });
         throw new Error(result.message || "We could not send your request.");
       }
-      if (result.accepted !== true) return;
+      if (result.accepted !== true) throw new Error("We couldn’t confirm your request. Please call us or try again.");
       setStatus({ type: "success", message: result.message }); reset(); startedAt.current = Date.now();
     } catch (error) {
       console.error("Contact form submission error", { message: error instanceof Error ? error.message : "Unknown request error" });
