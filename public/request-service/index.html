@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Request residential or commercial plumbing service from CTA Plumbing 100 in Nampa and across Idaho’s Treasure Valley. Call anytime for emergency plumbing.">
+  <title>Request Plumbing Service | CTA Plumbing 100</title>
+  <link rel="canonical" href="https://ctaplumbing100.com/request-service">
+  <link rel="stylesheet" href="/request-service/styles.css">
+  <script src="/request-service/form.js" defer></script>
+</head>
+<body>
+  <header class="wrap top">
+    <a class="brand" href="https://ctaplumbing100.com/"><img src="/images/logo-source.webp" width="56" height="56" alt="">CTA Plumbing 100</a>
+    <a class="phone" href="tel:+12084479290">(208) 447-9290</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="intro">
+          <p class="label">Nampa &amp; the Treasure Valley</p>
+          <h1>Need a local plumber?</h1>
+          <p class="lead">Leaky pipe, clogged drain, or no hot water? Get help from a local team serving homes and businesses across the Treasure Valley.</p>
+          <div class="actions">
+            <a class="button" href="https://book.housecallpro.com/book/CTA-Plumbing-100/1a2b590e1e914b608cf622b9784903cc?v2=true">Book Service Now</a>
+            <a class="button secondary" href="tel:+12084479290">Call Now</a>
+          </div>
+        </div>
+        <section class="request-card" id="request-service" aria-labelledby="request-title">
+          <h2 id="request-title">Request Plumbing Service</h2>
+          <p>Tell us what you need and we’ll follow up.</p>
+          <form class="request-form" id="request-form" hidden>
+            <p class="label" id="form-progress" aria-live="polite">Step 1 of 4</p>
+            <progress max="4" value="1" aria-label="Form progress"></progress>
+            <fieldset>
+              <legend tabindex="-1">What kind of property is it?</legend>
+              <div class="choices">
+                <button type="button" class="choice" data-field="property" value="Residential" aria-pressed="false">Residential</button>
+                <button type="button" class="choice" data-field="property" value="Commercial" aria-pressed="false">Commercial</button>
+              </div>
+            </fieldset>
+            <fieldset hidden disabled>
+              <legend tabindex="-1">Are you the property owner?</legend>
+              <div class="choices">
+                <button type="button" class="choice" data-field="ownership" value="Yes" aria-pressed="false">Yes</button>
+                <button type="button" class="choice" data-field="ownership" value="No" aria-pressed="false">No</button>
+              </div>
+            </fieldset>
+            <fieldset hidden disabled>
+              <legend tabindex="-1">What service do you need?</legend>
+              <div class="choices">
+                <button type="button" class="choice" data-field="service" value="Leak or pipe repair" aria-pressed="false">Leak or pipe repair</button>
+                <button type="button" class="choice" data-field="service" value="Clogged drain or sewer" aria-pressed="false">Clogged drain or sewer</button>
+                <button type="button" class="choice" data-field="service" value="Water heater" aria-pressed="false">Water heater</button>
+                <button type="button" class="choice" data-field="service" value="Fixture or faucet" aria-pressed="false">Fixture or faucet</button>
+                <button type="button" class="choice" data-field="service" value="Repiping" aria-pressed="false">Repiping</button>
+                <button type="button" class="choice" data-field="service" value="Water Treatment" aria-pressed="false">Water Treatment</button>
+                <button type="button" class="choice" data-field="service" value="Something else" aria-pressed="false">Something else</button>
+              </div>
+            </fieldset>
+            <fieldset hidden disabled>
+              <legend tabindex="-1">How can we reach you?</legend>
+              <label>Full name<input name="name" autocomplete="name" required minlength="2" maxlength="100"></label>
+              <div class="field-row">
+                <label>Phone<input name="phone" type="tel" autocomplete="tel" required minlength="7" maxlength="30"></label>
+                <label>Email<input name="email" type="email" autocomplete="email" required maxlength="150"></label>
+              </div>
+              <p>See our <a href="https://ctaplumbing100.com/privacy-policy">privacy policy</a>.</p>
+            </fieldset>
+            <div class="actions">
+              <button type="button" class="button secondary" id="form-back" hidden>Back</button>
+              <button type="submit" class="button" id="form-next" hidden>Submit Request</button>
+            </div>
+            <p id="form-error" role="alert" hidden></p>
+          </form>
+          <p id="form-success" role="status" tabindex="-1" hidden>Thanks! We received your request and will be in touch.</p>
+          <p class="form-fallback"><a href="https://ctaplumbing100.com/contact">Open our main contact page</a></p>
+        </section>
+      </div>
+    </section>
+    <section class="emergency" aria-labelledby="emergency-title">
+      <div class="wrap emergency-inner">
+        <div><h2 id="emergency-title">24/7 emergency plumbing</h2><p>Dealing with a burst pipe, major leak, or backup? Call anytime.</p></div>
+        <a href="tel:+12084479290">Call (208) 447-9290</a>
+      </div>
+    </section>
+    <section class="wrap services" aria-labelledby="services-title">
+      <div>
+        <p class="label">Residential &amp; commercial</p>
+        <h2 id="services-title">How can we help?</h2>
+        <p>Based in Nampa and serving Boise, Meridian, and surrounding Treasure Valley communities.</p>
+        <img class="hero-image" src="/images/hero-plumber.webp" width="1800" height="1202" alt="CTA Plumbing 100 technician carrying equipment outside a home" loading="lazy">
+      </div>
+      <ul class="service-list">
+        <li>Pipe and leak repair</li>
+        <li>Water heater repair and replacement</li>
+        <li>Sewer and drain cleaning</li>
+        <li>Whole-home repiping</li>
+        <li>Fixtures and faucets</li>
+        <li>Commercial plumbing</li>
+        <li>Water treatment</li>
+      </ul>
+    </section>
+  </main>
+  <footer class="wrap bottom">
+    <span>CTA Plumbing 100 · Nampa, Idaho</span>
+    <a href="https://ctaplumbing100.com/">Visit our main website</a>
+  </footer>
+</body>
+</html>
