@@ -1,0 +1,27 @@
+.site-back-to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 41;
+  padding: .65rem .9rem;
+  min-height: 44px;
+  border: 1px solid #b89a55;
+  border-radius: .7rem;
+  background: #10243e;
+  color: white;
+  box-shadow: 0 4px 16px #10243e33;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.site-back-to-top[hidden] { display: none; }
+.site-back-to-top:hover { background: #1c3859; }
+.site-back-to-top:focus-visible { outline: 3px solid #b89a55; outline-offset: 3px; }
+
+@media (max-width: 767px) {
+  body:has(.site-global-mobile-call) .site-back-to-top {
+    bottom: max(5.25rem, calc(env(safe-area-inset-bottom) + 4.25rem));
+  }
+}
