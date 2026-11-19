@@ -84,6 +84,11 @@ form.addEventListener('submit', async (event) => {
     });
     const result = await response.json();
     if (!response.ok || result.accepted !== true) throw new Error(result.message);
+    try {
+      window.fbq?.('trackSingle', '1066143976321475', 'Lead', {
+        content_name: 'Plumbing service request'
+      }, { eventID: requestId });
+    } catch {}
     form.reset();
     form.hidden = true;
     success.hidden = false;

@@ -31,6 +31,11 @@ export function EstimateForm({ compact = false }: { compact?: boolean }) {
       try { result = JSON.parse(text); } catch { result = { message: `The server returned an error (${response.status}). Please call us instead.` }; }
       if (!response.ok) throw new Error(result.message || "We could not send your estimate request.");
       if ((result as { accepted?: boolean }).accepted !== true) return;
+      try {
+        window.fbq?.("trackSingle", "1066143976321475", "Lead", {
+          content_name: "Plumbing estimate request"
+        });
+      } catch {}
       setStatus({ type: "success", message: result.message || "Thank you. Your estimate request has been sent." });
       form.reset();
     } catch (error) {

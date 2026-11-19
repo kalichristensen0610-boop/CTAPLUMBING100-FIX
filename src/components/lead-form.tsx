@@ -29,6 +29,11 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
         throw new Error(result.message || "We could not send your request.");
       }
       if (result.accepted !== true) throw new Error("We couldn’t confirm your request. Please call us or try again.");
+      try {
+        window.fbq?.("trackSingle", "1066143976321475", "Lead", {
+          content_name: "Plumbing contact form"
+        }, { eventID: result.requestId });
+      } catch {}
       setStatus({ type: "success", message: result.message }); reset(); startedAt.current = Date.now();
     } catch (error) {
       console.error("Contact form submission error", { message: error instanceof Error ? error.message : "Unknown request error" });
