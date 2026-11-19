@@ -1,3 +1,4 @@
+import { attributionSection } from "@/lib/lead-attribution";
 import { serviceLeadRecipients } from "@/lib/service-lead-recipients";
 import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
@@ -25,6 +26,8 @@ export async function POST(request: Request) {
   console.info(`[estimate:${requestId}] endpoint_received`,{contentType:request.headers.get("content-type")||"none"});
   if(!sameOrigin(request))return NextResponse.json({success:false,code:"ORIGIN_REJECTED",message:"This request is not allowed.",requestId},{status:403});
   let form:FormData;try{form=await request.formData()}catch{return NextResponse.json({success:false,code:"INVALID_FORM",message:"The request could not be read.",requestId},{status:400})}
+  let attribution: unknown;
+  try { attribution = JSON.parse(String(form.get("attribution") || "{}")); } catch {}
   const parsed=schema.safeParse({name:sanitizeText(form.get("name"),100),phone:sanitizeText(form.get("phone"),30),zipCode:sanitizeText(form.get("zipCode"),10),service:sanitizeText(form.get("service"),100),smsTransactionalConsent:form.get("smsTransactionalConsent")==="true",smsMarketingConsent:form.get("smsMarketingConsent")==="true",source:form.get("source"),website:sanitizeText(form.get("website")||"",200),formStartedAt:form.get("formStartedAt"),formSessionId:sanitizeText(form.get("formSessionId"),100),turnstileToken:sanitizeText(form.get("turnstileToken"),2048)});
   if(!parsed.success)return NextResponse.json({success:false,accepted:false,code:"VALIDATION_ERROR",message:"Please complete every required field.",requestId},{status:400});
   const lead=parsed.data;
@@ -37,6 +40,7 @@ export async function POST(request: Request) {
   try{
     const transporter=nodemailer.createTransport({host,port,secure:port===465||clean("SMTP_SECURE")?.toLowerCase()==="true",auth:{user,pass:password}});
     const delivery = await transporter.sendMail({from,to:recipient,cc:withAfterHoursRecipient(cc, receivedAt),subject:`Estimate funnel request: ${lead.service}`,...leadNotification("New estimate request", [
+      attributionSection(attribution),
       { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["ZIP code", lead.zipCode]] },
       { title: "Service request", rows: [["Requested service", lead.service], ["Source", "estimate-a landing page"]] },
       { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },

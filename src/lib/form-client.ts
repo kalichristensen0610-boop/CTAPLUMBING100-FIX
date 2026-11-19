@@ -7,3 +7,10 @@ export function getFormSessionId() {
   }
   return value;
 }
+
+declare global {
+  interface Window { ctaLeadAttribution?: Record<string, string> }
+}
+export function getLeadAttribution() {
+  return window.ctaLeadAttribution || {};
+}

@@ -9,7 +9,7 @@ import { site } from "@/lib/site";
 import { Button } from "@/components/ui/button";
 import { SmsConsentFields } from "@/components/sms-consent-fields";
 import { TurnstileField } from "@/components/turnstile-field";
-import { getFormSessionId } from "@/lib/form-client";
+import { getFormSessionId, getLeadAttribution } from "@/lib/form-client";
 
 export function LeadForm({ emergency = false, compact = false }: { emergency?: boolean; compact?: boolean }) {
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -21,7 +21,7 @@ export function LeadForm({ emergency = false, compact = false }: { emergency?: b
   async function submit(data: LeadInput) {
     setStatus(null);
     try {
-      const payload = { ...data, formStartedAt: startedAt.current, formSessionId: getFormSessionId(), turnstileToken };
+      const payload = { ...data, attribution: getLeadAttribution(), formStartedAt: startedAt.current, formSessionId: getFormSessionId(), turnstileToken };
       const response = await fetch("/api/leads", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const result = await response.json().catch(() => ({ message: "The server returned an unreadable response." }));
       if (!response.ok) {

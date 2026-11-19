@@ -79,7 +79,7 @@ form.addEventListener('submit', async (event) => {
     const response = await fetch('/api/request-service', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...selections, ...contact, id: requestId, formStartedAt, turnstileToken }),
+      body: JSON.stringify({ ...selections, ...contact, id: requestId, formStartedAt, turnstileToken, attribution: window.ctaLeadAttribution }),
       signal: AbortSignal.timeout(25000)
     });
     const result = await response.json();

@@ -1,3 +1,4 @@
+import { attributionSection, leadAttributionSchema } from "@/lib/lead-attribution";
 import { randomUUID } from "node:crypto";
 import nodemailer from "nodemailer";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { serviceLeadRecipients } from "@/lib/service-lead-recipients";
 export const runtime = "nodejs";
 
 const inquiry = z.object({
+  attribution: leadAttributionSchema,
   id: z.string().uuid(),
   property: z.enum(["Residential", "Commercial"]),
   ownership: z.enum(["Yes", "No"]),
@@ -76,6 +78,7 @@ export async function POST(request: Request) {
       from, to: serviceLeadRecipients, replyTo: lead.email,
       subject: `Website request for ${lead.service}`,
       ...leadNotification("New plumbing service inquiry", [
+        attributionSection(lead.attribution),
         { title: "Contact details", rows: [["Name", lead.name], ["Phone", lead.phone], ["Email", lead.email]] },
         { title: "Service details", rows: [["Property", lead.property], ["Property owner", lead.ownership], ["Service", lead.service]] },
       ]),

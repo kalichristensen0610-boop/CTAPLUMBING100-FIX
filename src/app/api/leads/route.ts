@@ -1,3 +1,4 @@
+import { attributionSection } from "@/lib/lead-attribution";
 import { serviceLeadRecipients } from "@/lib/service-lead-recipients";
 import { withAfterHoursRecipient } from "@/lib/after-hours";
 import { randomUUID } from "node:crypto";
@@ -121,6 +122,7 @@ export async function POST(request: Request) {
       replyTo: lead.email,
       subject: `${lead.urgency === "emergency" ? "URGENT: " : ""}Website request for ${lead.service}`,
       ...leadNotification("New website service request", [
+        attributionSection(lead.attribution),
         { title: "Customer details", rows: [["Name", lead.name], ["Phone", lead.phone], ["Email", lead.email], ["Address", `${lead.address}, ${lead.city}`], ["ZIP code", lead.zipCode], ["Preferred contact", lead.preferredContact]] },
         { title: "Service request", rows: [["Requested service", lead.service], ["Urgency", lead.urgency], ["Customer message", lead.message]] },
         { title: "SMS consent", rows: [["Transactional messages", lead.smsTransactionalConsent ? "Yes" : "No"], ["Marketing messages", lead.smsMarketingConsent ? "Yes" : "No"]] },

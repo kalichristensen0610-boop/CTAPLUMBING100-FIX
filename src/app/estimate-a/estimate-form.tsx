@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useId, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle, Send } from "lucide-react";
 import { SmsConsentFields } from "@/components/sms-consent-fields";
 import { TurnstileField } from "@/components/turnstile-field";
-import { getFormSessionId } from "@/lib/form-client";
+import { getFormSessionId, getLeadAttribution } from "@/lib/form-client";
 
 const services = ["Water Softener Installation", "Water Heater Installation", "Plumbing Repair", "Drain or Sewer Service", "Other Plumbing Service"];
 
@@ -24,7 +24,7 @@ export function EstimateForm({ compact = false }: { compact?: boolean }) {
     setSubmitting(true);
     setStatus(null);
     try {
-      const data = new FormData(form); data.set("formStartedAt", String(startedAt.current)); data.set("formSessionId", getFormSessionId()); data.set("turnstileToken", turnstileToken);
+      const data = new FormData(form); data.set("attribution", JSON.stringify(getLeadAttribution())); data.set("formStartedAt", String(startedAt.current)); data.set("formSessionId", getFormSessionId()); data.set("turnstileToken", turnstileToken);
       const response = await fetch("/api/estimate", { method: "POST", body: data });
       const text = await response.text();
       let result: { message?: string } = {};

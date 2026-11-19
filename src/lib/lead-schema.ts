@@ -1,6 +1,8 @@
+import { leadAttributionSchema } from "./lead-attribution";
 import { z } from "zod";
 
 export const leadSchema = z.object({
+  attribution: leadAttributionSchema,
   name: z.string().trim().min(2, "Please enter your name").max(100),
   phone: z.string().trim().min(7, "Please enter a valid phone number").max(30),
   email: z.string().trim().email("Please enter a valid email").max(150),
